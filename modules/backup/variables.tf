@@ -22,3 +22,8 @@ variable "lifecycle_days" {
   description = "バックアップの保持期間"
   type        = string
 }
+
+variable "sns_topic_arn" {
+  description = "SNSトピックのARN"
+  type        = string
+}

@@ -5,6 +5,4 @@ locals {
   BACKUP_RULE_NAME      = format("%s", var.backup_name)
   BACKUP_VAULT_NAME     = format("%s-vault-infra", local.NAME_PREFIX)
   BACKUP_SELECTION_NAME = format("%s-infra", local.NAME_PREFIX)
-  # BACKUP_SELECTION_FORMAT = "%s-select-%s"
-  # BACKUP_SELECTION_NAME   = format("%s-select-%s", local.NAME_PREFIX, var.resouce_type)
 }

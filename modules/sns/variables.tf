@@ -17,12 +17,3 @@ variable "sns_endpoint" {
   description = "通知先エンドポイント（メールアドレスまたは電話番号）"
   type        = string
 }
-
-variable "backup_config_list" {
-  description = "バックアップの設定情報"
-  type = list(object({
-    backup_name    = string
-    schedule_cron  = string
-    lifecycle_days = number
-  }))
-}

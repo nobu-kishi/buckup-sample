@@ -1,9 +1,10 @@
-# AWS Backup Vault
+#--------------------------------------------------------------
+# AWS Backup
+#--------------------------------------------------------------
 resource "aws_backup_vault" "this" {
   name = local.BACKUP_VAULT_NAME
 }
 
-# AWS Backup Plan
 resource "aws_backup_plan" "this" {
   name = local.BACKUP_PLAN_NAME
 
@@ -20,9 +21,8 @@ resource "aws_backup_plan" "this" {
   }
 }
 
-# AWS Backup Selection
 resource "aws_backup_selection" "this" {
-  iam_role_arn = aws_iam_role.backup_role.arn
+  iam_role_arn = aws_iam_role.bk_role.arn
   name         = local.BACKUP_SELECTION_NAME
   plan_id      = aws_backup_plan.this.id
 
@@ -34,13 +34,25 @@ resource "aws_backup_selection" "this" {
   }
 }
 
-# IAM ロール
-resource "aws_iam_role" "backup_role" {
-  name               = local.BACKUP_ROLE_NAME
-  assume_role_policy = data.aws_iam_policy_document.backup.json
+resource "aws_backup_vault_notifications" "this" {
+  backup_vault_name = aws_backup_vault.this.name
+  sns_topic_arn     = var.sns_topic_arn
+
+  backup_vault_events = [
+    "BACKUP_JOB_FAILED",
+    "RESTORE_JOB_FAILED"
+  ]
 }
 
-data "aws_iam_policy_document" "backup" {
+#--------------------------------------------------------------
+# IAM ロール
+#--------------------------------------------------------------
+resource "aws_iam_role" "bk_role" {
+  name               = local.BACKUP_ROLE_NAME
+  assume_role_policy = data.aws_iam_policy_document.bk.json
+}
+
+data "aws_iam_policy_document" "bk" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -52,41 +64,41 @@ data "aws_iam_policy_document" "backup" {
 }
 
 # バックアップのポリシーを追加
-data "aws_iam_policy" "backup" {
+data "aws_iam_policy" "bk" {
   arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup"
 }
 
-resource "aws_iam_role_policy_attachment" "backup" {
-  role       = aws_iam_role.backup_role.name
-  policy_arn = data.aws_iam_policy.backup.arn
+resource "aws_iam_role_policy_attachment" "bk" {
+  role       = aws_iam_role.bk_role.name
+  policy_arn = data.aws_iam_policy.bk.arn
 }
 
 # バックアップのリストアポリシーを追加
-data "aws_iam_policy" "backup_restore" {
+data "aws_iam_policy" "bk_restore" {
   arn = "arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores"
 }
 
-resource "aws_iam_role_policy_attachment" "backup_restore" {
-  role       = aws_iam_role.backup_role.name
-  policy_arn = data.aws_iam_policy.backup_restore.arn
+resource "aws_iam_role_policy_attachment" "bk_restore" {
+  role       = aws_iam_role.bk_role.name
+  policy_arn = data.aws_iam_policy.bk_restore.arn
 }
 
 # バックアップのポリシーを追加（S3）
-data "aws_iam_policy" "s3_backup" {
+data "aws_iam_policy" "s3_bk" {
   arn = "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Backup"
 }
 
-resource "aws_iam_role_policy_attachment" "s3_backup" {
-  role       = aws_iam_role.backup_role.name
-  policy_arn = data.aws_iam_policy.s3_backup.arn
+resource "aws_iam_role_policy_attachment" "s3_bk" {
+  role       = aws_iam_role.bk_role.name
+  policy_arn = data.aws_iam_policy.s3_bk.arn
 }
 
 # バックアップのリストアポリシーを追加（S3）
-data "aws_iam_policy" "s3_backup_restore" {
+data "aws_iam_policy" "s3_bk_restore" {
   arn = "arn:aws:iam::aws:policy/AWSBackupServiceRolePolicyForS3Restore"
 }
 
-resource "aws_iam_role_policy_attachment" "s3_backup_restore" {
-  role       = aws_iam_role.backup_role.name
-  policy_arn = data.aws_iam_policy.s3_backup_restore.arn
+resource "aws_iam_role_policy_attachment" "s3_bk_restore" {
+  role       = aws_iam_role.bk_role.name
+  policy_arn = data.aws_iam_policy.s3_bk_restore.arn
 }
